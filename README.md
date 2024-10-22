@@ -42,8 +42,24 @@ Due to the request bloackge issue, Reddit search is not working in the live vers
 
 ## Setup and Installation
 
-To run the application locally and ensure full functionality, including Reddit search:
+1) To run the application locally and ensure full functionality, including Reddit search:
 
 ```bash
-    git clone https://github.com/jimitk21/AlmaShines_Assignment.git
+   git clone https://github.com/jimitk21/AlmaShines_Assignment.git
    cd AlmaShines_Assignment
+```
+
+2) Install the required dependencies:
+```bash
+   pip install -r requirements.txt
+```
+
+
+3) Setup Environment Variables
+
+
+4) Run the Application:
+```bash
+   python app.py
+```
+
