@@ -4,11 +4,13 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import os
 from dotenv import load_dotenv
+import urllib.parse
 from bs4 import BeautifulSoup
+import html
 
 class StackOverflowSearcher:
     def __init__(self):
-        
+       
         load_dotenv()
         self.api_key = os.getenv('STACKOVERFLOW_API_KEY')
         self.base_url = "https://api.stackexchange.com/2.3"
@@ -17,14 +19,14 @@ class StackOverflowSearcher:
         }
 
     def get_top_answer(self, question_id: int) -> Optional[Dict]:
-       
+        
         answers_url = f"{self.base_url}/questions/{question_id}/answers"
         
         params = {
             'site': 'stackoverflow',
             'order': 'desc',
             'sort': 'votes',
-            'filter': 'withbody',  
+            'filter': 'withbody', 
             'pagesize': 1,  
             'key': self.api_key
         }
@@ -55,18 +57,18 @@ class StackOverflowSearcher:
     def _clean_html(self, html_content: str) -> str:
         
         soup = BeautifulSoup(html_content, 'html.parser')
-        
+       
         code_blocks = []
         for code in soup.find_all('code'):
             code_blocks.append(f"Code: {code.get_text()}")
             code.decompose()
-        
+    
         text = soup.get_text(separator=' ').strip()
-        
+    
         text = ' '.join(text.split())
-        
+      
         if code_blocks:
-            text += '\n\nCode Examples:\n' + '\n'.join(code_blocks[:2])  
+            text += '\n\nCode Examples:\n' + '\n'.join(code_blocks[:2]) 
         
         return text
 
@@ -77,14 +79,16 @@ class StackOverflowSearcher:
                order: str = "desc",
                page: int = 1,
                pagesize: int = 30) -> Dict:
-      
+       
         search_url = f"{self.base_url}/search"
         
+
         cleaned_query = self._clean_query(query)
         
+   
         params = {
             'site': 'stackoverflow',
-            'q': cleaned_query, 
+            'q': cleaned_query,  
             'sort': sort,
             'order': order,
             'page': page,
@@ -152,9 +156,9 @@ class StackOverflowSearcher:
             }
 
     def _clean_query(self, query: str) -> str:
-    
-        cleaned = query.replace('"', ' ').replace("'", ' ')
         
+        cleaned = query.replace('"', ' ').replace("'", ' ')
+  
         common_replacements = {
             'module not found:': 'modulenotfounderror',
             'no module named': 'modulenotfounderror',
@@ -167,13 +171,14 @@ class StackOverflowSearcher:
         return cleaned.strip()
 
     def _process_results(self, questions: List[Dict]) -> List[Dict]:
-        
+      
         processed_questions = []
         
         for question in questions:
             created_date = datetime.fromtimestamp(question['creation_date'])
             last_activity_date = datetime.fromtimestamp(question['last_activity_date'])
             
+         
             top_answer = self.get_top_answer(question['question_id'])
             
             processed_question = {
@@ -200,6 +205,7 @@ class StackOverflowSearcher:
         return processed_questions
 
 def main():
+
     searcher = StackOverflowSearcher()
     
     while True:
@@ -212,12 +218,13 @@ def main():
             
         tags_input = input("Enter tags (comma-separated, optional, press Enter to skip): ").strip()
         tags = [tag.strip() for tag in tags_input.split(',')] if tags_input else None
-        
+      
         results = searcher.search(
             query=query,
             tags=tags,
             pagesize=10  
         )
+        
         
         if 'error' in results:
             print(f"\nError: {results['error']}")
@@ -243,13 +250,15 @@ def main():
                           f"(reputation: {question['owner']['reputation']})")
                     print(f"   Link: {question['link']}")
                     
+                   
                     if question.get('top_answer'):
                         answer = question['top_answer']
                         print(f"\n   Top Answer (Score: {answer['score']}, "
                               f"Accepted: {'Yes' if answer['is_accepted'] else 'No'}):")
                         
+                        
                         clean_text = searcher._clean_html(answer['body'])
-  
+                      
                         print(f"   {clean_text[:300]}...")
                         print(f"   Answer link: {answer['link']}")
                     else:

@@ -3,11 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index</title>
+    <title>Tech Search Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
-<body>
-    <h1>
-        Index Test
-    </h1>
+<body class="bg-slate-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="text-center mb-8">
+            <div class="flex justify-end mb-4">
+                <div id="google_translate_element" class=""></div>
+            </div>
+            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-blue-600">
+                Tech Search Hub
+            </h1>
+            <p class="text-gray-600 mt-2">Search across Reddit and Stack Overflow</p>
+        </header>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <form id="searchForm" class="space-y-4">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="searchQuery" 
+                            placeholder="Enter your search query..." 
+                            required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                        >
+                    </div>
+                    <button 
+                        type="submit"
+                        class="px-8 py-3 bg-gradient-to-r from-orange-500 to-blue-500 text-white rounded-lg hover:from-orange-600 hover:to-blue-600 transition-all transform hover:scale-105"
+                    >
+                        <i class="fas fa-search mr-2"></i>
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="filterContainer" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="flex flex-col">
+                    <label class="text-sm text-gray-600 mb-1">Source</label>
+                    <div class="flex gap-4">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" id="redditSource" checked class="form-checkbox text-orange-500">
+                            <span class="ml-2">Reddit</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" id="stackoverflowSource" checked class="form-checkbox text-blue-500">
+                            <span class="ml-2">Stack Overflow</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <label for="sortOption" class="text-sm text-gray-600 mb-1">Sort By</label>
+                    <select 
+                        id="sortOption"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg cursor-pointer focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="relevance">Relevance</option>
+                        <option value="date">Date</option>
+                        <option value="score">Score</option>
+                        <option value="comments">Comments/Answers</option>
+                    </select>
+                </div>
+                
+                <div class="flex flex-col">
+                    <label for="sortDirection" class="text-sm text-gray-600 mb-1">Order</label>
+                    <select 
+                        id="sortDirection"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg cursor-pointer focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
+                </div>
+
+               
+            </div>
+        </div>
+
+        <div id="emailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                <h2 class="text-xl font-semibold mb-4">Email Search Results</h2>
+                <form id="emailForm" class="space-y-4">
+                    <div>
+                        <label for="emailInput" class="block text-sm text-gray-600 mb-1">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="emailInput" 
+                            required
+                            placeholder="Enter your email address"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                        >
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button 
+                            type="button"
+                            onclick="closeEmailModal()"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            class="px-4 py-2 bg-gradient-to-r from-orange-500 to-blue-500 text-white rounded-lg hover:from-orange-600 hover:to-blue-600 transition-all"
+                        >
+                            Send Email
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="loadingSpinner" class="hidden justify-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent border-blue-500"></div>
+        </div>
+
+        <div class="flex justify-between items-center mb-4">
+            <div id="resultsStats" class="hidden text-gray-600"></div>
+            <button 
+                id="emailButton" 
+                onclick="openEmailModal()"
+                class="hidden px-4 py-2 bg-gradient-to-r from-orange-500 to-blue-500 text-white rounded-lg hover:from-orange-600 hover:to-blue-600 transition-all"
+            >
+                <i class="fas fa-envelope mr-2"></i>
+                Email Results
+            </button>
+        </div>
+
+        <div id="resultsContainer" class="grid grid-cols-1 gap-4">
+            
+        </div>
+
+        <div 
+            id="errorMessage" 
+            class="hidden bg-red-100 text-red-800 p-4 rounded-xl mt-6 text-center"
+        >
+            
+        </div>
+    </div>
+
+    <script>
+                    function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
+                    autoDisplay: false,
+                    includedLanguages: '', 
+                }, 'google_translate_element');
+            }
+
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    .goog-te-combo {
+                        padding: 0.5rem;
+                        border-radius: 0.5rem;
+                        border: 1px solid #e2e8f0;
+                        background-color: white;
+                        color: #4a5568;
+                        outline: none;
+                        cursor: pointer;
+                    }
+                    .goog-te-combo:focus {
+                        border-color: #3b82f6;
+                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                    }
+                    .goog-te-gadget {
+                        font-family: inherit !important;
+                        color: #4a5568 !important;
+                    }
+                    .goog-te-gadget span {
+                        display: none;
+                    }
+                    .goog-te-gadget select {
+                        margin-right: 0 !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            });
+
+        // DOM Elements
+        const searchForm = document.getElementById('searchForm');
+        const searchQuery = document.getElementById('searchQuery');
+        const filterContainer = document.getElementById('filterContainer');
+        const sortOption = document.getElementById('sortOption');
+        const sortDirection = document.getElementById('sortDirection');
+        const redditSource = document.getElementById('redditSource');
+        const stackoverflowSource = document.getElementById('stackoverflowSource');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsStats = document.getElementById('resultsStats');
+        const errorMessage = document.getElementById('errorMessage');
+        const emailButton = document.getElementById('emailButton');
+        const emailModal = document.getElementById('emailModal');
+        const emailForm = document.getElementById('emailForm');
+
+    
+        let allResults = [];
+
+    
+        searchForm.addEventListener('submit', handleSearch);
+        sortOption.addEventListener('change', applyFilters);
+        sortDirection.addEventListener('change', applyFilters);
+        redditSource.addEventListener('change', applyFilters);
+        stackoverflowSource.addEventListener('change', applyFilters);
+        emailForm.addEventListener('submit', handleEmailSubmit);
+
+        
+        function openEmailModal() {
+            emailModal.classList.remove('hidden');
+            emailModal.classList.add('flex');
+        }
+
+        function closeEmailModal() {
+            emailModal.classList.add('hidden');
+            emailModal.classList.remove('flex');
+            emailForm.reset();
+        }
+
+        async function handleEmailSubmit(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('emailInput').value;
+            const emailButton = emailForm.querySelector('button[type="submit"]');
+            const originalButtonText = emailButton.innerHTML;
+            
+            try {
+                emailButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+                emailButton.disabled = true;
+                
+                const response = await fetch('/api/email-results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        results: allResults,
+                        query: searchQuery.value
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showError('Email sent successfully!');
+                    closeEmailModal();
+                } else {
+                    throw new Error(data.error || 'Failed to send email');
+                }
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                emailButton.innerHTML = originalButtonText;
+                emailButton.disabled = false;
+            }
+        }
+
+    
+        async function handleSearch(e) {
+            e.preventDefault();
+            
+            if (!redditSource.checked && !stackoverflowSource.checked) {
+                showError('Please select at least one source');
+                return;
+            }
+
+            loadingSpinner.style.display = 'flex';
+            resultsContainer.innerHTML = '';
+            resultsStats.style.display = 'none';
+            errorMessage.style.display = 'none';
+            filterContainer.classList.add('hidden');
+            emailButton.classList.add('hidden');
+            
+            try {
+                const results = [];
+                
+            
+                if (redditSource.checked) {
+                    const redditResponse = await fetch(`/api/reddit/search?q=${encodeURIComponent(searchQuery.value)}`);
+                    const redditData = await redditResponse.json();
+                    if (!redditData.error) {
+                        results.push(...redditData.results.map(r => ({ ...r, source: 'reddit' })));
+                    }
+                }
+                
+
+                if (stackoverflowSource.checked) {
+                    const soResponse = await fetch(`/api/stackoverflow/search?q=${encodeURIComponent(searchQuery.value)}`);
+                    const soData = await soResponse.json();
+                    if (!soData.error) {
+                        results.push(...soData.results.map(r => ({ ...r, source: 'stackoverflow' })));
+                    }
+                }
+                
+                allResults = results;
+                filterContainer.classList.remove('hidden');
+                emailButton.classList.remove('hidden');
+                applyFilters();
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function applyFilters() {
+            let filteredResults = [...allResults];
+            
+            filteredResults = filteredResults.filter(result => 
+                (result.source === 'reddit' && redditSource.checked) ||
+                (result.source === 'stackoverflow' && stackoverflowSource.checked)
+            );
+            
+        
+            const direction = sortDirection.value === 'asc' ? 1 : -1;
+            
+            filteredResults.sort((a, b) => {
+                switch (sortOption.value) {
+                    case 'date':
+                        return (new Date(a.created_at) - new Date(b.created_at)) * direction;
+                    case 'score':
+                        return (a.score - b.score) * direction;
+                    case 'comments':
+                        const aComments = a.source === 'reddit' ? a.num_comments : a.answer_count;
+                        const bComments = b.source === 'reddit' ? b.num_comments : b.answer_count;
+                        return (aComments - bComments) * direction;
+                    default:
+                        return 0;
+                }
+            });
+            
+            displayResults(filteredResults);
+        }
+
+        function displayResults(results) {
+            resultsContainer.innerHTML = '';
+            resultsStats.innerHTML = `Found ${results.length} results`;
+            resultsStats.style.display = 'block';
+            
+            if (results.length === 0) {
+                showError('No results found');
+                return;
+            }
+            
+            results.forEach(result => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow';
+                
+                const date = new Date(result.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                if (result.source === 'reddit') {
+                    card.innerHTML = `
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fab fa-reddit text-orange-500"></i>
+                            <span class="text-sm text-gray-500">Reddit</span>
+                        </div>
+                        <a href="${result.url}" 
+                           class="text-xl font-semibold text-gray-900 hover:text-orange-500 transition-colors block mb-2" 
+                           target="_blank"
+                        >
+                            ${result.title}
+                        </a>
+                        <div class="text-sm text-gray-500 mb-2">
+                            <span>Posted by u/${result.author}</span> • 
+                            <span>${date}</span> • 
+                            <span>r/${result.subreddit}</span>
+                            </div>
+                        <div class="text-sm text-gray-600">
+                            <span>🔼 ${formatNumber(result.score)}</span> • 
+                            <span>💬 ${formatNumber(result.num_comments)} comments</span> • 
+                            <span>${Math.round(result.upvote_ratio * 100)}% upvoted</span>
+                        </div>
+                        ${result.selftext ? `
+                            <div class="mt-4 text-gray-600 leading-relaxed">
+                                ${truncateText(result.selftext, 300)}
+                            </div>
+                        ` : ''}
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fab fa-stack-overflow text-blue-500"></i>
+                            <span class="text-sm text-gray-500">Stack Overflow</span>
+                        </div>
+                        <a href="${result.link}" 
+                           class="text-xl font-semibold text-gray-900 hover:text-blue-500 transition-colors block mb-2" 
+                           target="_blank"
+                        >
+                            ${result.title}
+                        </a>
+                        <div class="text-sm text-gray-500 mb-2">
+                            <span>Asked by ${result.owner.name}</span> • 
+                            <span>${date}</span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <span>🔼 ${formatNumber(result.score)}</span> • 
+                            <span>💬 ${formatNumber(result.answer_count)} answers</span> • 
+                            <span>👁️ ${formatNumber(result.view_count)} views</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            ${result.tags.map(tag => `
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                    ${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            return text.substr(0, maxLength) + '...';
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            
+           
+            if (message.toLowerCase().includes('success')) {
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+      
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialQuery = urlParams.get('q');
+            
+            if (initialQuery) {
+                searchQuery.value = initialQuery;
+                searchForm.dispatchEvent(new Event('submit'));
+            }
+
+           
+            emailModal.addEventListener('click', (e) => {
+                if (e.target === emailModal) {
+                    closeEmailModal();
+                }
+            });
+
+         
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !emailModal.classList.contains('hidden')) {
+                    closeEmailModal();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -2,10 +2,11 @@ import requests
 import json
 from datetime import datetime
 from typing import Dict, List, Optional
+import os
 
 class RedditSearcher:
     def __init__(self):
-    
+        
         self.base_url = "https://www.reddit.com"
         self.headers = {
             'User-Agent': 'Python/RequestsScript 1.0'
@@ -17,33 +18,34 @@ class RedditSearcher:
                sort: str = "relevance",
                time_filter: str = "all",
                limit: int = 25) -> Dict:
-       
+      
         if subreddit:
             search_url = f"{self.base_url}/r/{subreddit}/search.json"
         else:
             search_url = f"{self.base_url}/search.json"
 
-   
         params = {
             'q': query,
             'sort': sort,
             't': time_filter,
-            'limit': min(limit, 100), 
-            'restrict_sr': bool(subreddit), 
+            'limit': min(limit, 100),  
+            'restrict_sr': bool(subreddit),  
             'type': 'link'  
         }
 
         try:
-          
+            
             response = requests.get(
                 search_url,
                 headers=self.headers,
                 params=params
             )
-            response.raise_for_status()  
+            response.raise_for_status() 
 
+    
             data = response.json()
             
+    
             processed_results = self._process_results(data['data']['children'])
             
             return {
@@ -69,12 +71,12 @@ class RedditSearcher:
             }
 
     def _process_results(self, posts: List[Dict]) -> List[Dict]:
-      
+        
         processed_posts = []
         
         for post in posts:
             post_data = post['data']
-            
+        
             created_utc = datetime.fromtimestamp(post_data['created_utc'])
             
             processed_post = {
@@ -101,6 +103,7 @@ class RedditSearcher:
         return processed_posts
 
 def main():
+
     searcher = RedditSearcher()
     
     query = input("Enter search query: ")
@@ -113,7 +116,7 @@ def main():
         time_filter='month',
         limit=10
     )
-    
+   
     if 'error' in results:
         print(f"Error: {results['error']}")
     else:
