@@ -2,12 +2,10 @@ import requests
 import json
 from datetime import datetime
 from typing import Dict, List, Optional
-import os
-# from dotenv import load_dotenv
 
 class RedditSearcher:
     def __init__(self):
-        """Initialize the Reddit searcher with base URL and headers"""
+    
         self.base_url = "https://www.reddit.com"
         self.headers = {
             'User-Agent': 'Python/RequestsScript 1.0'
@@ -19,48 +17,33 @@ class RedditSearcher:
                sort: str = "relevance",
                time_filter: str = "all",
                limit: int = 25) -> Dict:
-        """
-        Search Reddit for posts matching the query.
-        
-        Args:
-            query (str): Search query
-            subreddit (str, optional): Specific subreddit to search in
-            sort (str): Sort method ('relevance', 'hot', 'top', 'new', 'comments')
-            time_filter (str): Time range ('hour', 'day', 'week', 'month', 'year', 'all')
-            limit (int): Maximum number of results to return (max 100)
-        
-        Returns:
-            Dict: Processed search results
-        """
-        # Build the search URL
+       
         if subreddit:
             search_url = f"{self.base_url}/r/{subreddit}/search.json"
         else:
             search_url = f"{self.base_url}/search.json"
 
-        # Set up the search parameters
+   
         params = {
             'q': query,
             'sort': sort,
             't': time_filter,
-            'limit': min(limit, 100),  # Reddit's max limit is 100
-            'restrict_sr': bool(subreddit),  # Restrict to subreddit if specified
-            'type': 'link'  # Search for posts
+            'limit': min(limit, 100), 
+            'restrict_sr': bool(subreddit), 
+            'type': 'link'  
         }
 
         try:
-            # Make the request
+          
             response = requests.get(
                 search_url,
                 headers=self.headers,
                 params=params
             )
-            response.raise_for_status()  # Raise exception for bad status codes
+            response.raise_for_status()  
 
-            # Parse the response
             data = response.json()
             
-            # Process and format the results
             processed_results = self._process_results(data['data']['children'])
             
             return {
@@ -86,21 +69,12 @@ class RedditSearcher:
             }
 
     def _process_results(self, posts: List[Dict]) -> List[Dict]:
-        """
-        Process and format the search results.
-        
-        Args:
-            posts (List[Dict]): Raw post data from Reddit
-        
-        Returns:
-            List[Dict]: Processed and formatted posts
-        """
+      
         processed_posts = []
         
         for post in posts:
             post_data = post['data']
             
-            # Convert timestamp to datetime
             created_utc = datetime.fromtimestamp(post_data['created_utc'])
             
             processed_post = {
@@ -119,7 +93,6 @@ class RedditSearcher:
                 'domain': post_data['domain']
             }
             
-            # Add thumbnail if it exists and is not a default value
             if 'thumbnail' in post_data and post_data['thumbnail'] not in ['self', 'default', 'nsfw']:
                 processed_post['thumbnail'] = post_data['thumbnail']
             
@@ -128,14 +101,11 @@ class RedditSearcher:
         return processed_posts
 
 def main():
-    """Example usage of the RedditSearcher class"""
     searcher = RedditSearcher()
     
-    # Example search
     query = input("Enter search query: ")
     subreddit = input("Enter subreddit (optional, press Enter to skip): ").strip()
     
-    # Perform the search
     results = searcher.search(
         query=query,
         subreddit=subreddit if subreddit else None,
@@ -144,7 +114,6 @@ def main():
         limit=10
     )
     
-    # Print results
     if 'error' in results:
         print(f"Error: {results['error']}")
     else:
