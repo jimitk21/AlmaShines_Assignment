@@ -10,29 +10,25 @@ Welcome to the **Knowledge Base Application** — a web app designed to help use
 
 ### 2. Result Display
    - The results from Reddit and Stack Overflow are displayed side-by-side for easy comparison and reference.
-   - Results are fetched dynamically, showing titles, links, brief summaries, and relevant metadata like upvotes and comments (for Reddit).
+   - Results are fetched dynamically, showing titles, links, brief summaries.
 
 ### 3. Filtering and Sorting
-   - Users can filter and sort results based on parameters such as recency, relevance, and popularity.
-   - Tailored filters for both Reddit (e.g., subreddit-based filtering) and Stack Overflow (e.g., filtering by tag or votes) ensure users can quickly find the most useful answers.
+   - Users can filter and sort results based on parameters such as relevance , date and score.
 
 ### 4. Email Generation
-   - Users can generate an email containing links to selected results and send them directly to their inbox or others via the integrated email feature.
+   - Users can generate an email containing links to selected results and send them directly to their inbox.
 
 ### 5. Data Caching
-   - The app implements data caching to reduce unnecessary API calls, improving performance and load times when revisiting similar queries.
-   - Cached data is refreshed at intervals to ensure up-to-date information is always available.
+   - The app implements data caching to reduce unnecessary API calls, improving performance and load times when revisiting similar queries this is done using mongoDB.
 
 ### 6. Translation
    - The app integrates **Google Translate**, allowing users to translate search results into different languages.
-   - This feature ensures that users from various linguistic backgrounds can benefit from the platform.
 
 ## Current Limitations
 
 ### Reddit API on AWS
 - **Note**: The Reddit API is currently **blocked** on AWS IP addresses, which affects the live version hosted on AWS.
 - However, the **Reddit search** functionality works seamlessly on local deployments, where the Reddit API is not restricted.
-- We are exploring solutions, such as proxying requests or switching hosting services, to restore Reddit functionality on AWS.
 
 ## Live Application
 
@@ -41,3 +37,13 @@ The application is hosted live on AWS:
 **[Knowledge Base App (Live)](http://13.49.74.158:5000/)**
 
 Due to the request bloackge issue, Reddit search is not working in the live version but will function properly locally.
+
+
+
+## Setup and Installation
+
+To run the application locally and ensure full functionality, including Reddit search:
+
+```bash
+    git clone https://github.com/jimitk21/AlmaShines_Assignment.git
+   cd AlmaShines_Assignment
