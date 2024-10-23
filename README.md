@@ -24,11 +24,6 @@ Welcome to the **Knowledge Base Application** — a web app designed to help use
 ### 6. Translation
    - The app integrates **Google Translate**, allowing users to translate search results into different languages.
 
-## Current Limitations
-
-### Reddit API on AWS
-- **Note**: The Reddit API is currently **blocked** on AWS IP addresses, which affects the live version hosted on AWS.
-- However, the **Reddit search** functionality works seamlessly on local deployments, where the Reddit API is not restricted.
 
 ## Live Application
 
@@ -36,7 +31,6 @@ The application is hosted live on AWS:
 
 **[Knowledge Base App (Live)](http://13.49.74.158:5000/)**
 
-Due to the request bloackge issue, Reddit search is not working in the live version but will function properly locally.
 
 
 
